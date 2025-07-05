@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Formatter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+        }
+        .input-field, .output-field {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+            box-sizing: border-box; /* Ensures padding doesn't increase total width */
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .output-field {
+            background-color: #e2e8f0;
+            cursor: not-allowed;
+            color: #4a5568;
+            word-wrap: break-word; /* Ensures long words break and wrap */
+            min-height: 48px; /* Ensures output field has a consistent height */
+            display: flex;
+            align-items: center; /* Vertically centers text */
+            white-space: pre-wrap; /* Preserves whitespace and wraps text */
+        }
+    </style>
+</head>
+<body>
+    <div class="container flex flex-col gap-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800">Space to Underscore Converter</h1>
+
+        <div class="flex flex-col gap-2">
+            <label for="inputText" class="text-gray-700 font-medium text-lg">Enter Text:</label>
+            <input
+                type="text"
+                id="inputText"
+                class="input-field"
+                placeholder="Type your text here..."
+                aria-label="Input text for conversion"
+            />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label for="outputText" class="text-gray-700 font-medium text-lg">Converted Text:</label>
+            <div
+                id="outputText"
+                class="output-field"
+                aria-live="polite"
+            ></div>
+        </div>
+
+        <button
+            id="copyButton"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+            Copy Converted Text
+        </button>
+
+        <div id="messageBox" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md relative text-center" role="alert">
+            <span class="block sm:inline" id="messageText"></span>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the input, output, copy button, and message box elements
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+        const copyButton = document.getElementById('copyButton');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+
+        /**
+         * Converts spaces in the input text to underscores and updates the output field.
+         */
+        function convertText() {
+            const originalText = inputText.value;
+            // Replace all spaces with underscores using a regular expression
+            const converted = originalText.replace(/ /g, '_');
+            outputText.textContent = converted;
+        }
+
+        /**
+         * Displays a temporary message in the message box.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of message (e.g., 'success', 'error').
+         */
+        function showMessage(message, type) {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-green-100', 'border-green-400', 'text-green-700', 'bg-red-100', 'border-red-400', 'text-red-700');
+
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+            }
+            messageBox.classList.remove('hidden');
+
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000); // Hide message after 3 seconds
+        }
+
+        // Add an event listener to the input field for real-time conversion
+        inputText.addEventListener('input', convertText);
+
+        // Add an event listener to the copy button
+        copyButton.addEventListener('click', () => {
+            const textToCopy = outputText.textContent;
+            if (textToCopy) {
+                // Use document.execCommand('copy') for better iframe compatibility
+                const tempInput = document.createElement('textarea');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('Copied to clipboard!', 'success');
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    showMessage('Failed to copy text. Please try again manually.', 'error');
+                } finally {
+                    document.body.removeChild(tempInput);
+                }
+            } else {
+                showMessage('No text to copy!', 'error');
+            }
+        });
+
+        // Initialize the output text when the page loads
+        document.addEventListener('DOMContentLoaded', convertText);
+    </script>
+</body>
+</html>
